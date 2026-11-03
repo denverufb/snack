@@ -99,6 +99,105 @@ function snackFields(){
   try{await rpc('save_snack_v2',{p_barcode:barcode,p_name:name,p_price:price,p_stock:stock,p_pack_cost:cost,p_pack_size:count,p_fbla_price:member});form.reset();refresh();alert('Snack saved.');}catch(err){error(err);}
  },true);
 }
+
+const pantryCatalog=[["Pringles",27,13.98,1],["Nerd Clusters",24,29.53,2],["Rice Krispies",40,10.99,1],["Mothers Circus",30,15.64,1],["Miss Vickies",28,18.49,2],["Goldfish",30,15.99,1],["Chip Pack",40,22.43,2],["Gushers",42,22.95,2],["Welches",80,16,1],["Veggie Straw",24,32,2],["Oreo",60,18.65,1],["Skinny Pop",30,18.2,1],["Yoggies",30,23.99,1],["Skittles and Starbursts",30,27.99,2],["Blakes Bars",24,29.99,2]];
+function catalogKey(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');}
+function applyPreset(entry){
+  if(!entry)return;
+  $('snack-name').value=entry[0];
+  $('snack-price').value=String(entry[3]);
+  $('f-pack-count').value=entry[1];
+  $('f-pack-cost').value=entry[2].toFixed(2);
+  const saved=items.find(x=>catalogKey(x.name)===catalogKey(entry[0]));
+  if(saved){$('snack-barcode').value=saved.barcode;$('snack-stock').value=saved.stock??'';$('f-member-price').value=saved.fbla_price??'';}
+}
+function addPresetPicker(){
+ const form=$('snack-form');
+ const div=document.createElement('div');div.className='full';
+ const label=document.createElement('label');label.textContent='Choose one of the 15 Pantry snacks';
+ const select=document.createElement('select');select.id='pantry-preset';select.className='field';
+ select.appendChild(new Option('Select a snack to fill price and cost',''));
+ pantryCatalog.forEach((entry,i)=>select.appendChild(new Option(entry[0]+' · 
+ if(loaded)return;loaded=true;
+ const app=$('app'),nav=app.querySelector('nav'),tab=document.createElement('button');tab.textContent='Finances';nav.appendChild(tab);
+ const section=document.createElement('section');section.id='f-panel';section.className='hidden';
+ section.innerHTML='<div class="heading-row"><h1>Panther Pantry finances</h1><button id="f-refresh" class="btn">Refresh</button></div><p class="lead">Sales, inventory, and product performance</p><div class="stats">'+[['f-revenue','Revenue from snacks'],['f-profit','Gross profit'],['f-cogs','Cost of goods sold'],['f-margin','Gross margin'],['f-stockcost','Stock at cost'],['f-stockretail','Potential stock revenue'],['f-reloads','Cash reloads recorded'],['f-units','Units sold']].map(([id,title])=>'<div class="card stat"><span>'+title+'</span><strong id="'+id+'">—</strong></div>').join('')+'</div><div class="grid2 equal"><div class="card"><h2>Most popular</h2><p id="f-most">—</p></div><div class="card"><h2>Least popular</h2><p id="f-least">—</p></div></div><section class="card" style="margin-top:18px"><h2>Product performance</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Snack</th><th>Sold</th><th>Revenue</th><th>Gross profit</th><th>Stock</th><th>Unit cost</th></tr></thead><tbody id="f-rows"></tbody></table></div><p class="small" id="f-warning"></p></section><p class="warn" id="f-setup">Checking SQL setup...</p><p class="help-panel">Revenue is recognized on snack sales, not cash reloads. Gross profit excludes operating expenses. Historical costs may be estimates.</p>';
+ app.insertBefore(section,app.querySelector('.copyright'));
+ tab.addEventListener('click',()=>{app.querySelectorAll('[id^="tab-"]').forEach(x=>x.classList.add('hidden'));nav.querySelectorAll('button').forEach(x=>x.classList.remove('active'));tab.classList.add('active');section.classList.remove('hidden');check();});
+ nav.querySelectorAll('button[data-tab]').forEach(x=>x.addEventListener('click',()=>{section.classList.add('hidden');tab.classList.remove('active');}));
+ $('f-refresh').addEventListener('click',check);
+ const label=document.createElement('label');label.style.margin='14px 0';label.innerHTML='<input id="f-toggle" type="checkbox"> Use FBLA member price for scanned snacks';
+ $('student-box').parentElement.insertBefore(label,$('student-box'));$('f-toggle').addEventListener('change',e=>{fbla=e.target.checked;$('scan').focus();});
+ $('scan').addEventListener('keydown',scan,true);
+ const customButton=document.createElement('button');customButton.className='btn reload-btn';customButton.type='button';customButton.innerHTML='Custom<small>$1–$500</small>';$('reload10').parentElement.appendChild(customButton);customButton.addEventListener('click',custom);
+ $('student-rows').addEventListener('click',studentClick,true);
+ new MutationObserver(buttons).observe($('student-rows'),{childList:true,subtree:true});buttons();
+ snackFields();addPresetPicker();installSnackRemoval();check();
+}
+function poll(){if(!loaded&&$('app')&&!$('app').classList.contains('hidden'))install();}
+poll();setInterval(poll,1400);
+})();
++(entry[2]/entry[1]).toFixed(3)+' cost each · 
+ if(loaded)return;loaded=true;
+ const app=$('app'),nav=app.querySelector('nav'),tab=document.createElement('button');tab.textContent='Finances';nav.appendChild(tab);
+ const section=document.createElement('section');section.id='f-panel';section.className='hidden';
+ section.innerHTML='<div class="heading-row"><h1>Panther Pantry finances</h1><button id="f-refresh" class="btn">Refresh</button></div><p class="lead">Sales, inventory, and product performance</p><div class="stats">'+[['f-revenue','Revenue from snacks'],['f-profit','Gross profit'],['f-cogs','Cost of goods sold'],['f-margin','Gross margin'],['f-stockcost','Stock at cost'],['f-stockretail','Potential stock revenue'],['f-reloads','Cash reloads recorded'],['f-units','Units sold']].map(([id,title])=>'<div class="card stat"><span>'+title+'</span><strong id="'+id+'">—</strong></div>').join('')+'</div><div class="grid2 equal"><div class="card"><h2>Most popular</h2><p id="f-most">—</p></div><div class="card"><h2>Least popular</h2><p id="f-least">—</p></div></div><section class="card" style="margin-top:18px"><h2>Product performance</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Snack</th><th>Sold</th><th>Revenue</th><th>Gross profit</th><th>Stock</th><th>Unit cost</th></tr></thead><tbody id="f-rows"></tbody></table></div><p class="small" id="f-warning"></p></section><p class="warn" id="f-setup">Checking SQL setup...</p><p class="help-panel">Revenue is recognized on snack sales, not cash reloads. Gross profit excludes operating expenses. Historical costs may be estimates.</p>';
+ app.insertBefore(section,app.querySelector('.copyright'));
+ tab.addEventListener('click',()=>{app.querySelectorAll('[id^="tab-"]').forEach(x=>x.classList.add('hidden'));nav.querySelectorAll('button').forEach(x=>x.classList.remove('active'));tab.classList.add('active');section.classList.remove('hidden');check();});
+ nav.querySelectorAll('button[data-tab]').forEach(x=>x.addEventListener('click',()=>{section.classList.add('hidden');tab.classList.remove('active');}));
+ $('f-refresh').addEventListener('click',check);
+ const label=document.createElement('label');label.style.margin='14px 0';label.innerHTML='<input id="f-toggle" type="checkbox"> Use FBLA member price for scanned snacks';
+ $('student-box').parentElement.insertBefore(label,$('student-box'));$('f-toggle').addEventListener('change',e=>{fbla=e.target.checked;$('scan').focus();});
+ $('scan').addEventListener('keydown',scan,true);
+ const customButton=document.createElement('button');customButton.className='btn reload-btn';customButton.type='button';customButton.innerHTML='Custom<small>$1–$500</small>';$('reload10').parentElement.appendChild(customButton);customButton.addEventListener('click',custom);
+ $('student-rows').addEventListener('click',studentClick,true);
+ new MutationObserver(buttons).observe($('student-rows'),{childList:true,subtree:true});buttons();
+ snackFields();check();
+}
+function poll(){if(!loaded&&$('app')&&!$('app').classList.contains('hidden'))install();}
+poll();setInterval(poll,1400);
+})();
++entry[3]+' sell',String(i))));
+ const note=document.createElement('p');note.className='small';note.textContent='Preset fills product name, pack cost, pack quantity, and selling price. Scan its barcode and enter actual stock remaining before saving.';
+ div.append(label,select,note);form.insertBefore(div,form.firstElementChild);
+ select.addEventListener('change',()=>{
+    if(select.value==='')return;
+    applyPreset(pantryCatalog[Number(select.value)]);
+ });
+}
+function installSnackRemoval(){
+ const body=$('snack-rows');
+ const addButtons=()=>body.querySelectorAll('tr').forEach(tr=>{
+   const edit=tr.querySelector('button[data-snack-action="edit"]');
+   const cell=tr.querySelector('td.actions');
+   if(!edit||!cell||tr.querySelector('[data-snack-remove]'))return;
+   const button=document.createElement('button');
+   button.type='button';button.className='btn smallbtn danger';
+   button.textContent='Remove';button.dataset.snackRemove='yes';
+   cell.append(' ',button);
+ });
+ body.addEventListener('click',async event=>{
+   const button=event.target.closest('[data-snack-remove]');
+   if(!button)return;
+   event.preventDefault();event.stopImmediatePropagation();
+   if(!ready)return alert('Run upgrade_finance.sql and upgrade_snack_catalog.sql in Supabase first.');
+   const row=button.closest('tr');
+   const name=row.cells[0].textContent.trim();
+   const code=row.cells[1].textContent.trim();
+   if(!confirm('Permanently remove '+name+' from the snack catalog? Past sales and revenue will remain. This cannot be undone.'))return;
+   if(prompt('Type REMOVE to confirm deleting '+name+':')!=='REMOVE')return;
+   button.disabled=true;
+   try{
+      const result=await rpc('remove_snack_v3',{p_barcode:code});
+      await inventory();
+      refresh();
+      alert(result.name+' removed. '+result.sales_preserved+' previous purchases preserved.');
+   }catch(e){button.disabled=false;error(e);}
+ },true);
+ new MutationObserver(addButtons).observe(body,{childList:true,subtree:true});
+ addButtons();
+}
+
 function install(){
  if(loaded)return;loaded=true;
  const app=$('app'),nav=app.querySelector('nav'),tab=document.createElement('button');tab.textContent='Finances';nav.appendChild(tab);
