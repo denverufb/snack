@@ -111,7 +111,7 @@ function install(){
  const label=document.createElement('label');label.style.margin='14px 0';label.innerHTML='<input id="f-toggle" type="checkbox"> Use FBLA member price for scanned snacks';
  $('student-box').parentElement.insertBefore(label,$('student-box'));$('f-toggle').addEventListener('change',e=>{fbla=e.target.checked;$('scan').focus();});
  $('scan').addEventListener('keydown',scan,true);
- const custom=document.createElement('button');custom.className='btn reload-btn';custom.type='button';custom.innerHTML='Custom<small>$1–$500</small>';$('reload10').parentElement.appendChild(custom);custom.addEventListener('click',custom);
+ const customButton=document.createElement('button');customButton.className='btn reload-btn';customButton.type='button';customButton.innerHTML='Custom<small>$1–$500</small>';$('reload10').parentElement.appendChild(customButton);customButton.addEventListener('click',custom);
  $('student-rows').addEventListener('click',studentClick,true);
  new MutationObserver(buttons).observe($('student-rows'),{childList:true,subtree:true});buttons();
  snackFields();check();
