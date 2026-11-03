@@ -196,7 +196,7 @@
       const snack = snackById(t.snack_id);
       const related = t.kind === 'purchase' && refunded.has(t.id);
       const refundButton = t.kind === 'purchase' && !related
-        ? `<button class="btn smallbtn" data-refund-id="${t.id}">Refund</button>`
+        ? `<button class="btn smallbtn" data-refund-id="${t.id}">Remove purchase</button>`
         : (related ? '<span class="tag">Refunded</span>' : '');
       return `<tr><td>${escapeHTML(new Date(t.created_at).toLocaleString())}</td><td>${escapeHTML(student?.full_name || 'Student #' + t.student_id)}</td><td><span class="tag">${escapeHTML(t.kind)}</span></td><td>${escapeHTML(snack?.name || t.note || '—')}</td><td><strong style="color:${t.delta_points < 0 ? '#a82b35' : '#077b58'}">${t.delta_points > 0 ? '+' : ''}${t.delta_points}</strong></td><td>${t.balance_after}</td><td>${refundButton}</td></tr>`;
     }).join('') : '<tr><td colspan="7" class="empty">No transactions to show.</td></tr>';
@@ -391,13 +391,20 @@
     const btn = event.target.closest('button[data-refund-id]');
     if (!btn) return;
     const tx = state.transactions.find(x => x.id === btn.dataset.refundId);
-    if (!tx || !window.confirm('Refund this purchase? Points and tracked inventory will be restored.')) return;
+    if (!tx) return;
+    const pin = window.prompt('Enter the administrator PIN to remove this purchase:');
+    if (pin === null) return;
+    if (!window.confirm('Void this purchase? The original transaction remains in the audit trail, student points will be restored, and tracked stock returned.')) return;
     btn.disabled = true;
     try {
-      const { error } = await db.rpc('refund_purchase', { p_transaction_id: tx.id, p_request_id: uuid() });
+      const { error } = await db.rpc('void_purchase_pin', {
+        p_transaction_id: tx.id,
+        p_pin: pin,
+        p_request_id: uuid()
+      });
       if (error) throw error;
       await refreshAll();
-      toast('Purchase refunded. Points and stock restored.');
+      toast('Purchase removed from sales. Points and stock restored; audit record retained.');
     } catch (error) { toast(errText(error), true); btn.disabled = false; }
   }
   function exportCSV() {
