@@ -25,7 +25,7 @@ async function draw(){
   const qty=sn.pack_size??c?.[1]??null;
   const cost=sn.pack_cost??c?.[2]??null;
   const unit=qty&&cost!==null?money(cost/qty):'Needs cost';
-  return '<tr><td><strong>'+esc(sn.name)+'</strong></td><td class="mono">'+esc(sn.barcode)+'</td><td>'+sn.price+' pt</td><td>'+unit+'</td><td>'+(qty??'—')+'</td><td>'+(sn.stock??'Untracked')+'</td><td>'+(sn.active?'Active':'Inactive')+'</td><td class="actions">'+
+  return '<tr><td><strong>'+esc(sn.name)+'</strong></td><td class="mono">'+esc(sn.barcode)+'</td><td>'+Number(sn.price).toFixed(2)+' USD ('+sn.price+' pt)</td><td>'+unit+'</td><td>'+(qty??'—')+'</td><td>'+(sn.stock??'Untracked')+'</td><td>'+(sn.active?'Active':'Inactive')+'</td><td class="actions">'+
   '<button type="button" class="btn smallbtn" data-manage="edit" data-code="'+esc(sn.barcode)+'">Edit</button> '+
   '<button type="button" class="btn smallbtn" data-manage="stock" data-code="'+esc(sn.barcode)+'">Set stock</button> '+
   '<button type="button" class="btn smallbtn danger" data-manage="remove" data-code="'+esc(sn.barcode)+'">Remove</button></td></tr>';
