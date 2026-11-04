@@ -9,7 +9,7 @@ let financeLoaded=false,financeBusy=false;
 const baseCatalog=[['Pringles',27,13.98,1],['Nerd Clusters',24,29.53,2],['Rice Krispies',40,10.99,1],['Mothers Circus',30,15.64,1],['Miss Vickies',28,18.49,2],['Goldfish',30,15.99,1],['Chip Pack',40,22.43,2],['Gushers',42,22.95,2],['Welches',80,16,1],['Veggie Straw',24,32,2],['Oreo',60,18.65,1],['Skinny Pop',30,18.20,1],['Yoggies',30,23.99,1],['Skittles and Starbursts',30,27.99,2],['Blakes Bars',24,29.99,2]];
 const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const ali={nerdsclusters:'nerdclusters',nerdsgummyclusters:'nerdclusters',ricekrispiestreats:'ricekrispies',motherscircuscookies:'motherscircus',welchs:'welches',welchsfruitsnacks:'welches',veggiestraws:'veggiestraw',oreocookies:'oreo',blakesseedbars:'blakesbars'};
-function lookup(name){let k=ali[norm(name)]||norm(name);return baseCatalog.find(x=>norm(x[0])===k);}
+function lookup(name){return window.PANTRY_PRICE_BOOK?.find(name)||baseCatalog.find(x=>norm(x[0])===norm(name));}
 function showTab(){
  ['checkout','students','snacks','activity'].forEach(id=>$('tab-'+id).classList.add('hidden'));
  $('tab-finances').classList.remove('hidden');
@@ -52,7 +52,7 @@ async function load(){
  $('finance-stockretail').textContent=usd(retailValue);
  const used=new Set();
  const tableRows=baseCatalog.map(p=>{
-  const existing=items.find(x=>norm(x.name)===norm(p[0])||(ali[norm(x.name)]||norm(x.name))===norm(p[0]));
+  const existing=items.find(x=>lookup(x.name)?.[0]===p[0]);
   if(existing)used.add(existing.barcode);
   const totals=existing?results.find(x=>x.barcode===existing.barcode):null;
   const cost=(existing?.pack_cost??p[2])/(existing?.pack_size??p[1]);
