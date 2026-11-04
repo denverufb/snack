@@ -43,7 +43,7 @@ RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path=public,pg_temp
 AS $fn$
 DECLARE mode text; sid bigint; student_name text; charge_total numeric;
-DECLARE paid_total numeric;
+paid_total numeric;
 BEGIN
   IF NOT public.is_pantry_admin() THEN RAISE EXCEPTION 'Administrator only'; END IF;
   SELECT account_mode,admin_student_id INTO mode,sid
@@ -112,7 +112,7 @@ CREATE OR REPLACE FUNCTION public.checkout_snack_v2(
 ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
 SET search_path=public,pg_temp AS $fn$
 DECLARE st public.students; sn public.snacks; tx public.transactions;
-DECLARE charge integer; sid bigint; mode text; tab_id uuid; cost_at_sale numeric;
+charge integer; sid bigint; mode text; tab_id uuid; cost_at_sale numeric;
 BEGIN
  IF NOT public.is_staff() THEN RAISE EXCEPTION 'Staff access required'; END IF;
  IF p_request_id IS NULL THEN RAISE EXCEPTION 'Missing transaction request ID'; END IF;
