@@ -71,7 +71,7 @@ CREATE OR REPLACE FUNCTION public.admin_remove_tab_charge(
 SET search_path=public,pg_temp
 AS $fn$
 DECLARE c public.pantry_tab_charges;
-DECLARE total_owed numeric; total_paid numeric;
+total_owed numeric; total_paid numeric;
 BEGIN
  PERFORM public.require_pantry_admin_barcode(p_admin_barcode);
  PERFORM 1 FROM public.pantry_admin_settings WHERE singleton=1 FOR UPDATE;
