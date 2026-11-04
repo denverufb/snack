@@ -57,7 +57,7 @@ BEGIN
     RAISE EXCEPTION 'Administrator access required';
   END IF;
   IF length(trim(coalesce(p_keep_student_name,''))) < 2 THEN
-    RAISE EXCEPTION 'Enter the student's exact saved full name';
+    RAISE EXCEPTION 'Enter the exact saved student full name';
   END IF;
   SELECT count(*) FILTER (
      WHERE EXISTS (SELECT 1 FROM public.students s
