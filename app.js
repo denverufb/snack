@@ -75,11 +75,16 @@
     renderAll();
   }
   async function refreshHistory() {
-    const { data, error } = await db.from('transactions')
-      .select('id,request_id,kind,student_id,snack_id,delta_points,balance_after,related_transaction_id,note,staff_id,created_at')
+    const cols='id,request_id,kind,student_id,snack_id,delta_points,balance_after,related_transaction_id,note,staff_id,created_at';
+    let result = await db.from('transactions').select(cols)
+      .is('archived_at', null)
       .order('created_at', { ascending: false }).limit(200);
-    if (error) throw error;
-    state.transactions = data || [];
+    if (result.error && /archived_at|schema cache|column/i.test(result.error.message || '')) {
+      result = await db.from('transactions').select(cols)
+        .order('created_at', { ascending: false }).limit(200);
+    }
+    if (result.error) throw result.error;
+    state.transactions = result.data || [];
     renderActivity();
     renderStats();
   }
