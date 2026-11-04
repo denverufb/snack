@@ -10,7 +10,7 @@ const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
 const money=n=>'$'+Number(n||0).toFixed(3);
 let rows=[],snackLoad=0;
-function findCatalog(name){const k=aliases[norm(name)]||norm(name);return catalog.find(x=>norm(x[0])===k);}
+function findCatalog(name){return window.PANTRY_PRICE_BOOK?.find(name)||catalog.find(x=>norm(x[0])===norm(name));}
 async function readSnacks(){
  const {data,error}=await db.from('snacks').select('id,barcode,name,price,stock,pack_size,pack_cost,fbla_price,active').order('name').limit(1000);
  if(error)throw error;rows=data||[];return rows;
