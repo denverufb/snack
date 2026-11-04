@@ -10,7 +10,7 @@ BEGIN;
 -- This safeguards against assigning administrator rights to an employee.
 CREATE TEMP TABLE pantry_admin_selection(admin_id uuid NOT NULL) ON COMMIT DROP;
 INSERT INTO pg_temp.pantry_admin_selection(admin_id)
-VALUES ('REPLACE_WITH_YOUR_AUTH_USER_UUID'::uuid);
+VALUES ('2d8cbbb9-e980-48bf-96bd-de29acbf5473'::uuid);
 
 
 -- === PART 1: upgrade_admin_roles.sql ===
