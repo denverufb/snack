@@ -5,6 +5,7 @@ const db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let records=[],busy=false,loadedOnce=false,showing=false;
+window.PANTRY_ACTIVITY_ACTIVE=true;
 const status=s=>{$('activity-feedback').textContent=s;};
 async function rpc(fn,args){const {data,error}=await db.rpc(fn,args);if(error)throw error;return data;}
 async function load(){
@@ -36,7 +37,7 @@ $('activity-rows').addEventListener('click',async e=>{
  if(!tx)return;
  if(!confirm('Hide this '+tx.kind+' from Activity and financial reports? This does not change current points or inventory.'))return;
  const pin=prompt('Administrator PIN:');if(pin===null)return;
- btn.disabled=true;btn.textContent='Removing...';status('Removing selected entry...');
+ btn.disabled=true;btn.textContent='Removing...';status('Verifying removal...');
  try{
   await rpc('remove_activity_entry',{p_transaction_id:tx.id,p_pin:pin});
   records=records.filter(x=>x.id!==tx.id);
