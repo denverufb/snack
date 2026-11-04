@@ -303,6 +303,7 @@
     } catch (error) { toast(errText(error), true); await refreshReferenceData().catch(() => {}); }
     finally { state.busyActions.delete(key); focusScanner(); }
   }
+  async function customReload() { const st=selectedStudent(); if(!st)return toast('Select a student first.',true); const raw=prompt('Custom reload in whole dollars, 1 to 500:'); if(raw===null)return; const n=Number(raw); if(!raw.trim()||!Number.isInteger(n)||n<1||n>500)return toast('Enter 1 to 500 whole dollars.',true); if(!confirm('Confirm you collected $'+n+' from '+st.full_name+'?'))return; try{const {data,error}=await db.rpc('reload_points_custom',{p_student_barcode:st.barcode,p_points:n,p_note:'Custom cash reload',p_request_id:uuid()}); if(error)throw error; st.points=data.balance; renderAll(); refreshHistory().catch(()=>{}); toast('Reloaded '+n+' points.');}catch(error){toast(errText(error),true);} }
   async function saveStudent(event) {
     event.preventDefault();
     const barcode = el('student-barcode').value.trim();
@@ -462,6 +463,7 @@
     el('clear-feed').addEventListener('click', () => { state.feed = []; renderFeed(); focusScanner(); });
     el('reload5').addEventListener('click', () => doReload(5));
     el('reload10').addEventListener('click', () => doReload(10));
+    el('reload-custom').addEventListener('click',customReload);
     el('student-form').addEventListener('submit', saveStudent);
     el('snack-form').addEventListener('submit', saveSnack);
     el('student-search').addEventListener('input', renderStudents);
