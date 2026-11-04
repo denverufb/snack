@@ -246,7 +246,12 @@
     while (state.queue.length && state.loggedIn) {
       const item = state.queue[0];
       try {
-        const { data, error } = await db.rpc('checkout_snack', {
+        const { data, error } = await db.rpc(item.fbla ? 'checkout_snack_v2' : 'checkout_snack', item.fbla ? {
+          p_student_barcode: item.studentBarcode,
+          p_snack_barcode: item.snackBarcode,
+          p_request_id: item.requestId,
+          p_fbla: true
+        } : {
           p_student_barcode: item.studentBarcode,
           p_snack_barcode: item.snackBarcode,
           p_request_id: item.requestId
