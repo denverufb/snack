@@ -1,5 +1,6 @@
 (() => {
 'use strict';
+window.PANTRY_MANAGEMENT_ACTIVE=true;
 const cfg=window.SNACK_PASS_CONFIG||{};
 if(!window.supabase||!cfg.supabaseUrl||!cfg.supabaseAnonKey)return;
 const db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
