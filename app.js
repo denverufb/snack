@@ -256,8 +256,8 @@
         const sn = snackByBarcode(item.snackBarcode);
         if (st) st.points = data.balance;
         if (sn && data.stock !== undefined) sn.stock = data.stock;
-        addFeed(item.snackName, `${item.studentName} • -${sn?.price ?? '?'} points • ${data.balance} left`, true);
-        setStatus(`${item.snackName} sold to ${item.studentName}. Balance: ${data.balance} points.`, 'good');
+        addFeed(item.snackName, data.tab_charge ? `${item.studentName} • ${Number(data.charged).toFixed(2)} charged to tab` : `${item.studentName} • -${data.charged ?? sn?.price ?? '?'} points • ${data.balance} left`, true);
+        setStatus(data.tab_charge ? `${item.snackName} charged to ${item.studentName}'s tab (${Number(data.charged).toFixed(2)}). Points unchanged.` : `${item.snackName} sold to ${item.studentName}. Balance: ${data.balance} points.`, 'good');
         renderStats(); renderStudentBox(); renderStudents(); renderSnacks();
         // Update history without delaying the next scan.
         if (state.tab === 'activity') refreshHistory().catch(() => {});
