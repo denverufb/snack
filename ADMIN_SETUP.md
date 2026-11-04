@@ -12,11 +12,11 @@ Ensure the following earlier migrations were already executed in your Supabase p
 Existing students, snack barcodes, stock counts, points, and transactions are preserved.
 
 ## Install in one run
-Open [ADMIN_UPGRADE_RUN_ONCE.sql](./ADMIN_UPGRADE_RUN_ONCE.sql), copy the full contents, and run them in Supabase **SQL Editor**.
+Open [ADMIN_UPGRADE_RUN_ONCE.sql](./ADMIN_UPGRADE_RUN_ONCE.sql). In Supabase **Authentication > Users**, locate **your own staff login** and copy its User UID. Replace the one `REPLACE_WITH_YOUR_AUTH_USER_UUID` placeholder in the SQL with your exact Auth user UUID, then run the full SQL in **SQL Editor**. Do not use another employee's UUID.
 
 The update is wrapped in one database transaction, so a SQL error rolls back that upgrade.
 
-The existing, authorized primary staff account is set to **admin**. Every other row in `public.staff` becomes **staff**, and the role defaults to `staff` for new authorized accounts. A Supabase Authentication login must also be enrolled in `public.staff` by an administrator; creating an Auth login alone does not authorize cashier access.
+Only the Auth user UUID you explicitly select in the SQL is set to **admin**. Every other row in `public.staff` becomes **staff**, and the role defaults to `staff` for new authorized accounts. A Supabase Authentication login must also be enrolled in `public.staff` by an administrator; creating an Auth login alone does not authorize cashier access.
 
 ## After the SQL runs
 1. Refresh [Snack Pass](https://denverufb.github.io/snack/) using Command+Shift+R.
