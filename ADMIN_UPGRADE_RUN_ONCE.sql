@@ -612,4 +612,42 @@ REVOKE ALL ON FUNCTION public.link_admin_student_barcode(text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.link_admin_student_barcode(text) TO authenticated;
 
 
+
+-- Cashiers can REGISTER new students. Editing an existing student name
+-- remains an administrator-only action.
+CREATE OR REPLACE FUNCTION public.save_student(
+ p_barcode text,p_full_name text
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER
+SET search_path=public,pg_temp
+AS $fn$
+DECLARE r public.students;
+BEGIN
+ IF NOT public.is_staff() THEN RAISE EXCEPTION 'Staff access required'; END IF;
+ p_barcode:=trim(coalesce(p_barcode,''));
+ p_full_name:=trim(coalesce(p_full_name,''));
+ IF length(p_barcode) NOT BETWEEN 1 AND 100
+    OR length(p_full_name) NOT BETWEEN 1 AND 150 THEN
+  RAISE EXCEPTION 'Provide valid barcode and student name';
+ END IF;
+ IF public.is_pantry_admin() THEN
+  INSERT INTO public.students(barcode,full_name)
+  VALUES(p_barcode,p_full_name)
+  ON CONFLICT(barcode) DO UPDATE
+  SET full_name=EXCLUDED.full_name,active=true,updated_at=now()
+  RETURNING * INTO r;
+ ELSE
+  INSERT INTO public.students(barcode,full_name)
+  VALUES(p_barcode,p_full_name)
+  ON CONFLICT(barcode) DO NOTHING
+  RETURNING * INTO r;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'This student already exists. Only an administrator can edit existing students';
+  END IF;
+ END IF;
+ RETURN to_jsonb(r);
+END;
+$fn$;
+REVOKE ALL ON FUNCTION public.save_student(text,text) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.save_student(text,text) TO authenticated;
+
 COMMIT;
