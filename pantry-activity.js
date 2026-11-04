@@ -28,7 +28,7 @@ async function load(){
 function draw(){
  const kind=$('activity-kind').value;
  const found=records.filter(t=>kind==='all'||t.kind===kind);
- $('activity-rows').innerHTML=found.map(t=>'<tr data-id="'+esc(t.id)+'"><td><input type="checkbox" class="opening-choice" value="'+esc(t.id)+'" aria-label="Select for opening cleanup"></td><td>'+esc(new Date(t.created_at).toLocaleString())+'</td><td>'+esc(t.studentName)+'</td><td>'+esc(t.kind)+'</td><td>'+esc(t.productName)+'</td><td>'+t.delta_points+'</td><td>'+t.balance_after+'</td><td><button type="button" class="btn smallbtn danger" data-remove-entry="'+esc(t.id)+'">Remove</button></td></tr>').join('')||'<tr><td colspan="7" class="empty">No visible records.</td></tr>';
+ $('activity-rows').innerHTML=found.map(t=>'<tr data-id="'+esc(t.id)+'"><td>'+esc(new Date(t.created_at).toLocaleString())+'</td><td>'+esc(t.studentName)+'</td><td>'+esc(t.kind)+'</td><td>'+esc(t.productName)+'</td><td>'+t.delta_points+'</td><td>'+t.balance_after+'</td><td><button type="button" class="btn smallbtn danger" data-remove-entry="'+esc(t.id)+'">Remove</button></td></tr>').join('')||'<tr><td colspan="7" class="empty">No visible records.</td></tr>';
 }
 $('activity-rows').addEventListener('click',async e=>{
  const btn=e.target.closest('[data-remove-entry]');if(!btn)return;
