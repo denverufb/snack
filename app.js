@@ -66,7 +66,7 @@
   async function refreshReferenceData() {
     const [studentsResult, snacksResult] = await Promise.all([
       db.from('students').select('id,barcode,full_name,points,active,created_at').order('full_name').limit(1000),
-      db.from('snacks').select('id,barcode,name,price,stock,active,created_at').order('name').limit(1000)
+      db.from('snacks').select('id,barcode,name,price,stock,fbla_price,active,created_at').order('name').limit(1000)
     ]);
     if (studentsResult.error) throw studentsResult.error;
     if (snacksResult.error) throw snacksResult.error;
@@ -235,7 +235,7 @@
       setStatus('Scan a student ID before scanning a snack.', 'bad');
       return;
     }
-    state.queue.push({ studentBarcode: student.barcode, snackBarcode: sn.barcode, snackName: sn.name, studentName: student.full_name, requestId: uuid() });
+    state.queue.push({ studentBarcode: student.barcode, snackBarcode: sn.barcode, snackName: sn.name, studentName: student.full_name, fbla:el('fbla-mode').checked, requestId: uuid() });
     el('queue-count').textContent = state.queue.length > 1 ? `${state.queue.length} queued` : '';
     setStatus(`Received ${sn.name}. Confirming purchase…`);
     processQueue();
