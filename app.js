@@ -188,6 +188,7 @@
     el('snack-rows').innerHTML = filtered.length ? filtered.map(sn => `<tr class="${sn.active ? '' : 'inactive'}"><td><strong>${escapeHTML(sn.name)}</strong></td><td class="mono">${escapeHTML(sn.barcode)}</td><td>${sn.price} pt</td><td>${sn.stock === null ? 'Untracked' : sn.stock}</td><td><span class="tag ${sn.active ? 'green' : ''}">${sn.active ? 'Active' : 'Inactive'}</span></td><td class="actions"><button class="btn smallbtn" data-snack-action="edit" data-id="${sn.id}">Edit</button> <button class="btn smallbtn" data-snack-action="toggle" data-id="${sn.id}">${sn.active ? 'Deactivate' : 'Reactivate'}</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty">No snacks match your search.</td></tr>';
   }
   function renderActivity() {
+    if (window.PANTRY_ACTIVITY_ACTIVE) return;
     const kind = el('activity-kind').value;
     const rows = state.transactions.filter(t => kind === 'all' || t.kind === kind);
     const refunded = new Set(state.transactions.filter(t => t.kind === 'refund').map(t => t.related_transaction_id));
