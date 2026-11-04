@@ -185,7 +185,7 @@
   function renderStudents() {
     const q = el('student-search').value.trim().toLowerCase();
     const filtered = state.students.filter(s => (s.full_name + ' ' + s.barcode).toLowerCase().includes(q));
-    el('student-rows').innerHTML = filtered.length ? filtered.map(st => `<tr class="${st.active ? '' : 'inactive'}"><td><strong>${escapeHTML(st.full_name)}</strong></td><td class="mono">${escapeHTML(st.barcode)}</td><td><strong>${st.points}</strong></td><td><span class="tag ${st.active ? 'green' : ''}">${st.active ? 'Active' : 'Inactive'}</span></td><td class="actions"><button class="btn smallbtn" data-student-action="checkout" data-id="${st.id}" ${!st.active ? 'disabled' : ''}>Use</button> <button class="btn smallbtn" data-student-action="adjust" data-id="${st.id}">± Points</button> <button class="btn smallbtn" data-student-action="toggle" data-id="${st.id}">${st.active ? 'Deactivate' : 'Reactivate'}</button></td></tr>`).join('') : '<tr><td colspan="5" class="empty">No students match your search.</td></tr>';
+    el('student-rows').innerHTML = filtered.length ? filtered.map(st => `<tr class="${st.active ? '' : 'inactive'}"><td><strong>${escapeHTML(st.full_name)}</strong></td><td class="mono">${escapeHTML(st.barcode)}</td><td><strong>${st.points}</strong></td><td><span class="tag ${st.active ? 'green' : ''}">${st.active ? 'Active' : 'Inactive'}</span></td><td class="actions"><button class="btn smallbtn" data-student-action="checkout" data-id="${st.id}" ${!st.active ? 'disabled' : ''}>Use</button> ${window.PANTRY_IS_ADMIN ? `<button class="btn smallbtn" data-student-action="adjust" data-id="${st.id}">± Points</button> <button class="btn smallbtn" data-student-action="toggle" data-id="${st.id}">${st.active ? 'Deactivate' : 'Reactivate'}</button> <button class="btn smallbtn danger" data-student-action="delete" data-id="${st.id}">Delete</button>` : ''}</td></tr>`).join('') : '<tr><td colspan="5" class="empty">No students match your search.</td></tr>';
   }
   function renderSnacks() {
     const q = el('snack-search').value.trim().toLowerCase();
@@ -339,6 +339,26 @@
     const st = state.students.find(x => x.id === Number(btn.dataset.id));
     if (!st) return;
     const action = btn.dataset.studentAction;
+    if (action !== 'checkout' && !window.PANTRY_IS_ADMIN) {
+      toast('Only administrators can modify existing student accounts.', true);
+      return;
+    }
+    if (action === 'delete') {
+      if (!window.confirm('Permanently delete '+st.full_name+'? Existing balances are forfeited and past sales are anonymized.')) return;
+      const adminBarcode=await window.PANTRY_SCAN_ADMIN_BARCODE();
+      if (!adminBarcode) return;
+      try {
+        const {error}=await db.rpc('admin_remove_student',{
+          p_student_id:st.id,p_admin_barcode:adminBarcode
+        });
+        if(error)throw error;
+        state.students=state.students.filter(x=>x.id!==st.id);
+        if(state.selectedStudentBarcode===st.barcode)state.selectedStudentBarcode=null;
+        renderAll();
+        toast('Student removed. Audit records preserved.');
+      } catch(error) {toast(errText(error),true);}
+      return;
+    }
     if (action === 'checkout') { selectStudent(st); setTab('checkout'); return; }
     if (action === 'adjust') {
       const raw = window.prompt(`Adjust ${st.full_name}'s balance (${st.points}). Enter signed points, e.g. 3 or -2:`);
