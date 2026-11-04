@@ -26,9 +26,9 @@ async function draw(){
   const cost=sn.pack_cost??c?.[2]??null;
   const unit=qty&&cost!==null?money(cost/qty):'Needs cost';
   return '<tr><td><strong>'+esc(sn.name)+'</strong></td><td class="mono">'+esc(sn.barcode)+'</td><td>'+Number(sn.price).toFixed(2)+' USD ('+sn.price+' pt)</td><td>'+unit+'</td><td>'+(qty??'—')+'</td><td>'+(sn.stock??'Untracked')+'</td><td>'+(sn.active?'Active':'Inactive')+'</td><td class="actions">'+
-  '<button type="button" class="btn smallbtn" data-manage="edit" data-code="'+esc(sn.barcode)+'">Edit</button> '+
-  '<button type="button" class="btn smallbtn" data-manage="stock" data-code="'+esc(sn.barcode)+'">Set stock</button> '+
-  '<button type="button" class="btn smallbtn danger" data-manage="remove" data-code="'+esc(sn.barcode)+'">Remove</button></td></tr>';
+  (window.PANTRY_IS_ADMIN ? '<button type="button" class="btn smallbtn" data-manage="edit" data-code="'+esc(sn.barcode)+'">Edit</button> ' : '')+
+  (window.PANTRY_IS_ADMIN ? '<button type="button" class="btn smallbtn" data-manage="stock" data-code="'+esc(sn.barcode)+'">Set stock</button> ' : '')+
+  (window.PANTRY_IS_ADMIN ? '<button type="button" class="btn smallbtn danger" data-manage="remove" data-code="'+esc(sn.barcode)+'">Remove</button>' : 'View only')+'</td></tr>';
  }).join('')||'<tr><td colspan="8" class="empty">No snacks match.</td></tr>';
 }
 const preset=$('snack-preset');
@@ -74,14 +74,16 @@ $('snack-rows').addEventListener('click',async e=>{
   catch(err){setError(err);}finally{btn.disabled=false;}return;
  }
  if(btn.dataset.manage==='remove'){
+  if(!window.PANTRY_IS_ADMIN)return alert('Only the administrator may remove snacks.');
   if(!confirm('Permanently remove '+sn.name+'? Prior sales will remain in the audit trail.'))return;
-  if(prompt('Type REMOVE to confirm:')!=='REMOVE')return;
+  const adminCode=await window.PANTRY_SCAN_ADMIN_BARCODE();if(!adminCode)return;
   btn.disabled=true;
-  try{const {error}=await db.rpc('remove_snack_v3',{p_barcode:sn.barcode});if(error)throw error;await draw();window.dispatchEvent(new Event('pantry-updated'));}
+  try{const {error}=await db.rpc('admin_remove_snack',{p_snack_barcode:sn.barcode,p_admin_barcode:adminCode});if(error)throw error;await draw();window.dispatchEvent(new Event('pantry-updated'));}
   catch(err){setError(err);}finally{btn.disabled=false;}
  }
 },true);
 $('snack-search').addEventListener('input',()=>draw().catch(()=>{}));
+window.addEventListener('pantry-role-ready',()=>{if(!$('tab-snacks').classList.contains('hidden'))draw().catch(()=>{});});
 document.querySelector('[data-tab="snacks"]').addEventListener('click',()=>draw().catch(setError));
 window.addEventListener('pantry-updated',()=>{if(!$('tab-snacks').classList.contains('hidden'))draw().catch(()=>{});});
 window.PANTRY_CATALOG=catalog;
