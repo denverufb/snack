@@ -35,37 +35,19 @@ $('activity-rows').addEventListener('click',async e=>{
  e.preventDefault();e.stopImmediatePropagation();
  const tx=records.find(x=>x.id===btn.dataset.removeEntry);
  if(!tx)return;
- if(!confirm('Hide this '+tx.kind+' from Activity and financial reports? This does not change current points or inventory.'))return;
- const pin=prompt('Administrator PIN:');if(pin===null)return;
- btn.disabled=true;btn.textContent='Removing...';status('Verifying removal...');
+ if(!window.PANTRY_IS_ADMIN){status('Only administrators can remove activity.');return;}
+ if(!confirm('Hide this '+tx.kind+' from Activity and financial reports? Points and inventory stay unchanged.'))return;
+ const adminCode=await window.PANTRY_SCAN_ADMIN_BARCODE();
+ if(!adminCode)return;
+ btn.disabled=true;btn.textContent='Removing...';status('Verifying administrator barcode...');
  try{
-  await rpc('remove_activity_entry',{p_transaction_id:tx.id,p_pin:pin});
+  await rpc('admin_remove_activity',{p_transaction_id:tx.id,p_admin_barcode:adminCode});
   records=records.filter(x=>x.id!==tx.id);
   draw();status('Entry removed from Activity and reporting.');
   window.dispatchEvent(new Event('pantry-updated'));
  }catch(err){btn.disabled=false;btn.textContent='Remove';status('Removal failed: '+err.message);}
 },true);
 $('activity-kind').addEventListener('change',draw);
-$('opening-cleanup').addEventListener('click',async()=>{
-  const ids=Array.from(document.querySelectorAll('#activity-rows input.opening-choice:checked')).map(x=>x.value);
-  if(ids.length!==4){status('Select exactly four entries: three purchases and your reload or adjustment.');return;}
-  const chosen=records.filter(x=>ids.includes(x.id));
-  const purchases=chosen.filter(x=>x.kind==='purchase').map(x=>x.id);
-  const funding=chosen.find(x=>x.kind==='reload'||x.kind==='adjustment');
-  if(purchases.length!==3||!funding){status('The four selected rows must be three purchases and one reload or adjustment.');return;}
-  const pin=prompt('Enter administrator PIN to preview the one-time cleanup:');
-  if(pin===null)return;
-  status('Reviewing selected entries...');
-  try{
-    const args={purchase_ids:purchases,funding_id:funding.id,pin:pin,preview_only:true};
-    const preview=await rpc('archive_opening_tests',args);
-    if(!confirm('Keep the four selected entries and every transaction after '+new Date(preview.cutoff).toLocaleString()+'? Hide '+preview.would_hide+' older test entries from Activity and reports. Balances, cash and stock will not change.')){status('Cleanup cancelled. No data changed.');return;}
-    const applied=await rpc('archive_opening_tests',{...args,preview_only:false});
-    status('Cleanup complete: '+applied.hidden+' older test entries hidden. Four selected and all later entries kept.');
-    await load();window.dispatchEvent(new Event('pantry-updated'));
-  }catch(err){status('Cleanup failed: '+err.message);}
-});
-
 $('refresh-activity').addEventListener('click',()=>load(),true);
 document.querySelector('[data-tab="activity"]').addEventListener('click',()=>{
  if(!loadedOnce)load();else draw();
