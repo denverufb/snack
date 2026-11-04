@@ -46,19 +46,6 @@ $('activity-rows').addEventListener('click',async e=>{
  }catch(err){btn.disabled=false;btn.textContent='Remove';status('Removal failed: '+err.message);}
 },true);
 $('activity-kind').addEventListener('change',draw);
-$('keep-three').addEventListener('click',async()=>{
- const name=prompt('Exact saved student name for your 3 real entries:','Aereon Robinson');
- if(!name||!name.trim())return;
- try{
-  const preview=await rpc('preview_activity_cleanup',{p_keep_student_name:name.trim()});
-  if(preview.kept!==3){status('Found '+preview.kept+' records with this name, not 3. Nothing removed.');return;}
-  if(!confirm('Keep 3 records for '+name+' and hide '+preview.would_remove+' others from the reports? No student balances will be changed.'))return;
-  const pin=prompt('Administrator PIN:');if(pin===null)return;
-  const result=await rpc('keep_only_three_activity',{p_keep_student_name:name.trim(),p_pin:pin});
-  status('Removed '+result.removed+' entries. Kept 3.');
-  await load();window.dispatchEvent(new Event('pantry-updated'));
- }catch(err){status(err.message);}
-});
 $('refresh-activity').addEventListener('click',()=>load(),true);
 document.querySelector('[data-tab="activity"]').addEventListener('click',()=>{
  if(!loadedOnce)load();else draw();
