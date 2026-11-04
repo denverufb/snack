@@ -42,7 +42,6 @@ AS $fn$
  SELECT EXISTS (
   SELECT 1 FROM public.staff
   WHERE id=auth.uid()
-    AND id=(SELECT admin_id FROM pg_temp.pantry_admin_selection)
     AND active AND role='admin'
  );
 $fn$;
