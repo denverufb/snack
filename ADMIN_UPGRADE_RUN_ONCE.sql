@@ -5,6 +5,13 @@
 -- Entire upgrade runs in a single transaction.
 BEGIN;
 
+-- REQUIRED: Replace the placeholder with YOUR Supabase Auth user UUID.
+-- Supabase Dashboard > Authentication > Users > your own staff login.
+-- This safeguards against assigning administrator rights to an employee.
+CREATE TEMP TABLE pantry_admin_selection(admin_id uuid NOT NULL) ON COMMIT DROP;
+INSERT INTO pg_temp.pantry_admin_selection(admin_id)
+VALUES ('REPLACE_WITH_YOUR_AUTH_USER_UUID'::uuid);
+
 
 -- === PART 1: upgrade_admin_roles.sql ===
 -- Panther Pantry roles and administrator-only store settings.
@@ -21,13 +28,13 @@ ALTER TABLE public.staff ADD CONSTRAINT staff_role_check
 -- The account below is the sole administrator.
 UPDATE public.staff
 SET role = CASE
-  WHEN id='2d8cbbb9-e980-48bf-96bd-de29acbf5473'::uuid THEN 'admin'
+  WHEN id=(SELECT admin_id FROM pg_temp.pantry_admin_selection) THEN 'admin'
   ELSE 'staff' END;
 DO $check$
 BEGIN
  IF NOT EXISTS (
    SELECT 1 FROM public.staff
-   WHERE id='2d8cbbb9-e980-48bf-96bd-de29acbf5473'::uuid
+   WHERE id=(SELECT admin_id FROM pg_temp.pantry_admin_selection)
      AND active AND role='admin'
  ) THEN RAISE EXCEPTION 'Original administrator staff account missing or inactive'; END IF;
 END;
@@ -42,7 +49,6 @@ AS $fn$
  SELECT EXISTS (
   SELECT 1 FROM public.staff
   WHERE id=auth.uid()
-    AND id='2d8cbbb9-e980-48bf-96bd-de29acbf5473'::uuid
     AND active AND role='admin'
  );
 $fn$;
