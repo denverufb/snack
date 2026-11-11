@@ -47,6 +47,19 @@
     }
   }
   function setConnection(message) { el('connection').textContent = message; }
+  function showPasswordChange(recovery = false) {
+    state.loggedIn = false;
+    el('auth').classList.add('hidden');
+    el('app').classList.add('hidden');
+    el('password-change').classList.remove('hidden');
+    el('logout').classList.remove('hidden');
+    el('password-change-title').textContent = recovery ? 'Reset your password.' : 'Choose your password.';
+    el('password-change-copy').textContent = recovery
+      ? 'Enter a new password to finish recovering your cashier account.'
+      : 'Replace the temporary password before using the register.';
+    el('password-change-message').textContent = '';
+    setConnection('Password update required');
+  }
   function setTab(name) {
     if (name === 'activity' && !window.PANTRY_CAN_VIEW_ACTIVITY) return;
     if (name === 'finances' && !window.PANTRY_CAN_VIEW_FINANCES) return;
@@ -92,7 +105,16 @@
     renderStats();
   }
   async function refreshAll() {
-    await Promise.all([refreshReferenceData(), refreshHistory()]);
+    await refreshReferenceData();
+    try {
+      await refreshHistory();
+    } catch (error) {
+      // Regular cashiers are intentionally denied transaction history by RLS.
+      // They still need students and stock in order to operate the register.
+      state.transactions = [];
+      renderStats();
+      if (window.PANTRY_CAN_VIEW_ACTIVITY) throw error;
+    }
   }
   function startRealtime() {
     if (state.subscription) db.removeChannel(state.subscription);
@@ -113,6 +135,10 @@
     if (state.loggedIn || state.startInProgress) return;
     state.startInProgress = true;
     try {
+      if (session.user?.user_metadata?.must_change_password === true) {
+        showPasswordChange(false);
+        return;
+      }
       const { data, error } = await db.rpc('is_staff');
       if (error) throw error;
       if (!data) {
@@ -146,6 +172,7 @@
     state.transactions = [];
     if (state.subscription && db) db.removeChannel(state.subscription);
     state.subscription = null;
+    el('password-change').classList.add('hidden');
     el('auth').classList.remove('hidden');
     el('app').classList.add('hidden');
     el('logout').classList.add('hidden');
@@ -303,7 +330,7 @@
       renderAll();
       setStatus(`${st.full_name} reloaded ${points} points. New balance: ${data.balance}.`, 'good');
       toast(`Added ${points} points to ${st.full_name}.`);
-      await refreshHistory();
+      refreshHistory().catch(() => {});
     } catch (error) { toast(errText(error), true); await refreshReferenceData().catch(() => {}); }
     finally { state.busyActions.delete(key); focusScanner(); }
   }
@@ -491,6 +518,34 @@
       } catch (error) { el('auth-message').textContent = errText(error); }
       finally { btn.disabled = false; }
     });
+    el('password-change-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const password = el('new-password').value;
+      const confirmation = el('confirm-password').value;
+      const button = el('password-change-btn');
+      el('password-change-message').textContent = '';
+      if (password.length < 12 || password.length > 72) {
+        el('password-change-message').textContent = 'Use a password from 12 to 72 characters.';
+        return;
+      }
+      if (password !== confirmation) {
+        el('password-change-message').textContent = 'The two passwords do not match.';
+        return;
+      }
+      button.disabled = true;
+      try {
+        const { data: userResult, error: userError } = await db.auth.getUser();
+        if (userError) throw userError;
+        const metadata = { ...(userResult.user?.user_metadata || {}), must_change_password: false };
+        const { error } = await db.auth.updateUser({ password, data: metadata });
+        if (error) throw error;
+        el('password-change-message').textContent = 'Password saved. Opening the register...';
+        window.location.reload();
+      } catch (error) {
+        el('password-change-message').textContent = errText(error);
+        button.disabled = false;
+      }
+    });
     el('logout').addEventListener('click', async () => { await db.auth.signOut(); stop(); });
     window.addEventListener('online', () => setConnection('Connected'));
     window.addEventListener('offline', () => { setConnection('Offline'); toast('Internet is disconnected. Purchases cannot be confirmed.', true); });
@@ -513,6 +568,7 @@
       // Defer calls to database from inside the auth callback.
       setTimeout(() => {
         if (event === 'SIGNED_OUT') stop();
+        else if (event === 'PASSWORD_RECOVERY') showPasswordChange(true);
         else if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') start(session);
       }, 0);
     });

@@ -44,6 +44,9 @@ Run [`upgrade_krish_activity_finances.sql`](./upgrade_krish_activity_finances.sq
 
 Krish does not receive the Admin tab, administrator account-mode controls, snack or student editing, stock changes, or removal actions. Those restrictions are enforced by Supabase RLS/RPC checks as well as the navigation shown by the website.
 
+## Student cashier accounts
+To create and manage up to 15 student cashier logins from the Admin tab, complete the one-time steps in [`CASHIER_SETUP.md`](./CASHIER_SETUP.md). Cashier purchases are automatically attributed to the signed-in account and remain available in the administrator audit view even if the cashier is later disabled.
+
 ## Troubleshooting
 - **Admin tab missing:** the SQL migration has not run successfully, the admin is signed into the wrong Auth account, or the browser still has cached files.
 - **Barcode not recognized:** the administrator's linked student barcode is missing or was changed. Use the **Admin** tab to link it the first time.

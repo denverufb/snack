@@ -18,6 +18,8 @@
 
   <main id="auth" class="shell"><section class="card auth-box"><p class="eyebrow">STAFF ACCESS</p><h1>Welcome back.</h1><p class="lead">Sign in with your school store staff account.</p><form id="login-form"><label for="email">Email</label><input required id="email" class="field" type="email" autocomplete="username" placeholder="staff@school.edu"><label for="password">Password</label><input required id="password" class="field" type="password" autocomplete="current-password" placeholder="Password"><button class="btn primary" id="login-btn" type="submit">Sign in</button></form><p class="small" id="auth-message" aria-live="polite"></p></section></main>
 
+  <main id="password-change" class="shell hidden"><section class="card auth-box"><p class="eyebrow">ACCOUNT SECURITY</p><h1 id="password-change-title">Choose your password.</h1><p class="lead" id="password-change-copy">Replace the temporary password before using the register.</p><form id="password-change-form"><label for="new-password">New password</label><input required id="new-password" class="field" type="password" minlength="12" maxlength="72" autocomplete="new-password" placeholder="At least 12 characters"><label for="confirm-password">Confirm new password</label><input required id="confirm-password" class="field" type="password" minlength="12" maxlength="72" autocomplete="new-password" placeholder="Type it again"><button class="btn primary" id="password-change-btn" type="submit">Save new password</button></form><p class="small" id="password-change-message" aria-live="polite"></p></section></main>
+
   <main id="app" class="shell hidden">
     <nav class="nav" aria-label="Sections"><button class="active" data-tab="checkout">Checkout</button><button data-tab="students">Students</button><button data-tab="snacks">Snacks</button><button data-tab="activity" style="display:none">Activity</button><button data-tab="finances" style="display:none">Finances</button><button data-tab="admin" style="display:none">Admin</button></nav>
     <section id="tab-checkout">
@@ -63,15 +65,22 @@
 <section class="card"><div class="heading-row"><h2>My running tab</h2><button type="button" class="btn" id="admin-pay-tab">Record tab payment</button></div>
 <p class="small">Payment entry records money you've actually collected. It does not process a bank card. Removing an entry requires scanning your linked student ID.</p>
 <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date</th><th>Snack or payment</th><th>Amount</th><th>Action</th></tr></thead><tbody id="admin-tab-rows"></tbody></table></div>
-</section></section>
+</section>
+<section class="card"><div class="heading-row"><div><h2>Student cashier accounts</h2><p class="small"><strong id="cashier-count">0 of 15 active</strong> cashier accounts. Cashiers can check out, add new students, and view stock; they do not receive administrator controls.</p></div><button class="btn" id="cashier-refresh" type="button">Refresh accounts</button></div>
+<form id="cashier-form" class="formgrid" style="margin-top:18px"><div><label for="cashier-name">Cashier name</label><input class="field" id="cashier-name" required maxlength="100" autocomplete="off" placeholder="Student's full name"></div><div><label for="cashier-email">Login email</label><input class="field" id="cashier-email" required type="email" maxlength="254" autocomplete="off" placeholder="student@school.edu"></div><div><label for="cashier-password">Temporary password</label><input class="field" id="cashier-password" required type="password" minlength="12" maxlength="72" autocomplete="new-password" placeholder="At least 12 characters"></div><div style="align-self:end"><button class="btn primary" id="cashier-create" type="submit">Create cashier account</button></div></form>
+<p class="small">The temporary password is sent securely to Supabase and is never saved in this website or the staff table. The cashier must replace it at first sign-in.</p><p class="help-panel" id="cashier-status" aria-live="polite"></p>
+<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Cashier</th><th>Email</th><th>Status</th><th>Purchases</th><th>Sales</th><th>Last checkout</th><th>Actions</th></tr></thead><tbody id="cashier-rows"><tr><td colspan="7" class="empty">Loading cashier accounts...</td></tr></tbody></table></div>
+</section>
+<section class="card"><div class="heading-row"><div><h2 id="cashier-purchase-title">Cashier purchase history</h2><p class="small">Select a cashier above to see every snack checkout attributed to that login.</p></div></div><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Date / time</th><th>Student</th><th>Snack</th><th>Amount</th><th>Payment</th><th>Status</th></tr></thead><tbody id="cashier-purchase-rows"><tr><td colspan="6" class="empty">Choose a cashier to view purchases.</td></tr></tbody></table></div><p class="small" id="cashier-purchase-status" aria-live="polite"></p></section>
+</section>
     <p class="copyright">Snack Pass • Staff-only point tracking • Student data stored in your Supabase project</p>
   </main>
   <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="config.js"></script>
   <script src="pantry-price-book.js?v=20261104-7" defer></script>
-  <script src="app.js?v=20261111-1" defer></script>
-  <script src="pantry-access.js?v=20261111-1" defer></script>
+  <script src="app.js?v=20261111-2" defer></script>
+  <script src="pantry-access.js?v=20261111-2" defer></script>
   <script src="pantry-management.js?v=20261104-10" defer></script>
   <script src="pantry-activity.js?v=20261111-1" defer></script>
   <script src="pantry-finance.js?v=20261111-1" defer></script>
