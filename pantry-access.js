@@ -5,6 +5,8 @@ if(!window.supabase||!cfg.supabaseUrl||!cfg.supabaseAnonKey)return;
 const db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
 const $=id=>document.getElementById(id);
 window.PANTRY_IS_ADMIN=false;
+window.PANTRY_CAN_VIEW_ACTIVITY=false;
+window.PANTRY_CAN_VIEW_FINANCES=false;
 
 function scanAdminBarcode(){
  return new Promise(resolve=>{
@@ -45,19 +47,23 @@ const activityNav=document.querySelector('[data-tab="activity"]');
 const snackForm=$('snack-form')?.closest('section.card');
 let role=null,opening=false;
 
-function adminOnlyView(show){
- window.PANTRY_IS_ADMIN=show;
- for(const node of [adminNav,financeNav,activityNav]){
-  if(node)node.style.display=show?'':'none';
- }
- if(snackForm)snackForm.style.display=show?'':'none';
+function applyAccess({isAdmin=false,canViewActivity=false,canViewFinances=false}={}){
+ window.PANTRY_IS_ADMIN=isAdmin;
+ window.PANTRY_CAN_VIEW_ACTIVITY=canViewActivity;
+ window.PANTRY_CAN_VIEW_FINANCES=canViewFinances;
+ if(adminNav)adminNav.style.display=isAdmin?'':'none';
+ if(activityNav)activityNav.style.display=canViewActivity?'':'none';
+ if(financeNav)financeNav.style.display=canViewFinances?'':'none';
+ if(snackForm)snackForm.style.display=isAdmin?'':'none';
  const tips=$('admin-only-note');
- if(tips)tips.style.display=show?'':'none';
- if(!show){
-  if(section)section.classList.add('hidden');
-  if(!$('tab-finances').classList.contains('hidden')||!$('tab-activity').classList.contains('hidden')){
-    document.querySelector('[data-tab="checkout"]')?.click();
-  }
+ if(tips)tips.style.display=isAdmin?'':'none';
+ const adminWasOpen=section&&!section.classList.contains('hidden');
+ if(!isAdmin&&section)section.classList.add('hidden');
+ const blockedSection=(!canViewFinances&&!$('tab-finances').classList.contains('hidden'))||
+   (!canViewActivity&&!$('tab-activity').classList.contains('hidden'))||
+   (!isAdmin&&adminWasOpen);
+ if(blockedSection){
+  document.querySelector('[data-tab="checkout"]')?.click();
  }
  $('student-search')?.dispatchEvent(new Event('input'));
  window.dispatchEvent(new Event('pantry-role-ready'));
@@ -100,11 +106,17 @@ async function loadAccount(){
 async function syncRole(){
  try{
   const {data:session,error}=await db.auth.getSession();if(error)throw error;
-  if(!session.session){role=null;adminOnlyView(false);return;}
+  if(!session.session){role=null;applyAccess();return;}
   const result=await rpc('get_pantry_role');
-  role=result.role;adminOnlyView(role==='admin');
-  if(role==='admin')loadAccount();
- }catch(e){role=null;adminOnlyView(false);}
+  role=result.role;
+  const isAdmin=role==='admin';
+  applyAccess({
+   isAdmin,
+   canViewActivity:isAdmin||result.can_view_activity===true,
+   canViewFinances:isAdmin||result.can_view_finances===true
+  });
+  if(isAdmin)loadAccount();
+ }catch(e){role=null;applyAccess();}
 }
 if(adminNav){
  adminNav.addEventListener('click',()=>{
@@ -158,6 +170,6 @@ $('admin-tab-rows')?.addEventListener('click',async e=>{
 if(db.auth.onAuthStateChange){
  db.auth.onAuthStateChange(()=>setTimeout(syncRole,0));
 }
-adminOnlyView(false);
+applyAccess();
 syncRole();
 })();

@@ -11,6 +11,7 @@ const norm=s=>String(s||'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const ali={nerdsclusters:'nerdclusters',nerdsgummyclusters:'nerdclusters',ricekrispiestreats:'ricekrispies',motherscircuscookies:'motherscircus',welchs:'welches',welchsfruitsnacks:'welches',veggiestraws:'veggiestraw',oreocookies:'oreo',blakesseedbars:'blakesbars'};
 function lookup(name){return window.PANTRY_PRICE_BOOK?.find(name)||baseCatalog.find(x=>norm(x[0])===norm(name));}
 function showTab(){
+ if(!window.PANTRY_CAN_VIEW_FINANCES)return;
  ['checkout','students','snacks','activity'].forEach(id=>$('tab-'+id).classList.add('hidden'));
  $('tab-finances').classList.remove('hidden');
  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab==='finances'));
@@ -21,6 +22,7 @@ document.querySelectorAll('nav button[data-tab]').forEach(x=>{
  if(x.dataset.tab!=='finances')x.addEventListener('click',()=>$('tab-finances').classList.add('hidden'));
 });
 async function load(){
+ if(!window.PANTRY_CAN_VIEW_FINANCES)return;
  if(financeBusy)return;
  financeBusy=true;$('finance-note').textContent='Loading latest totals...';
  try{

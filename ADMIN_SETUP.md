@@ -39,6 +39,11 @@ Activity removals archive records and exclude them from financial totals without
 - **Administrator:** finance and activity, snack pricing and inventory adjustments, student account management, administrator account-mode switching, and barcode-confirmed removal.
 - **Regular staff:** checkout, point reloads, new student registration, student selection, and read-only stock/catalog browsing.
 
+## Krish Patel: read-only reporting exception
+Run [`upgrade_krish_activity_finances.sql`](./upgrade_krish_activity_finances.sql) after the one-run administrator upgrade. It grants Krish Patel's Supabase Auth UUID read-only access to **Activity** and **Finances** while keeping his persisted role as `staff`.
+
+Krish does not receive the Admin tab, administrator account-mode controls, snack or student editing, stock changes, or removal actions. Those restrictions are enforced by Supabase RLS/RPC checks as well as the navigation shown by the website.
+
 ## Troubleshooting
 - **Admin tab missing:** the SQL migration has not run successfully, the admin is signed into the wrong Auth account, or the browser still has cached files.
 - **Barcode not recognized:** the administrator's linked student barcode is missing or was changed. Use the **Admin** tab to link it the first time.

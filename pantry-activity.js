@@ -9,6 +9,7 @@ window.PANTRY_ACTIVITY_ACTIVE=true;
 const status=s=>{$('activity-feedback').textContent=s;};
 async function rpc(fn,args){const {data,error}=await db.rpc(fn,args);if(error)throw error;return data;}
 async function load(){
+ if(!window.PANTRY_CAN_VIEW_ACTIVITY)return;
  if(busy)return;
  busy=true;status('Loading activity...');
  try{
@@ -28,7 +29,11 @@ async function load(){
 function draw(){
  const kind=$('activity-kind').value;
  const found=records.filter(t=>kind==='all'||t.kind===kind);
- $('activity-rows').innerHTML=found.map(t=>'<tr data-id="'+esc(t.id)+'"><td>'+esc(new Date(t.created_at).toLocaleString())+'</td><td>'+esc(t.studentName)+'</td><td>'+esc(t.kind)+'</td><td>'+esc(t.productName)+'</td><td>'+t.delta_points+'</td><td>'+t.balance_after+'</td><td><button type="button" class="btn smallbtn danger" data-remove-entry="'+esc(t.id)+'">Remove</button></td></tr>').join('')||'<tr><td colspan="7" class="empty">No visible records.</td></tr>';
+ const action=t=>window.PANTRY_IS_ADMIN?'<button type="button" class="btn smallbtn danger" data-remove-entry="'+esc(t.id)+'">Remove</button>':'View only';
+ $('activity-rows').innerHTML=found.map(t=>'<tr data-id="'+esc(t.id)+'"><td>'+esc(new Date(t.created_at).toLocaleString())+'</td><td>'+esc(t.studentName)+'</td><td>'+esc(t.kind)+'</td><td>'+esc(t.productName)+'</td><td>'+t.delta_points+'</td><td>'+t.balance_after+'</td><td>'+action(t)+'</td></tr>').join('')||'<tr><td colspan="7" class="empty">No visible records.</td></tr>';
+ $('activity-explanation').textContent=window.PANTRY_IS_ADMIN
+  ?'Remove hides a test entry from Activity and the financial report. It does not change student points or stock. The original remains in the Supabase audit trail.'
+  :'This is read-only access. Only the administrator can remove activity.';
 }
 $('activity-rows').addEventListener('click',async e=>{
  const btn=e.target.closest('[data-remove-entry]');if(!btn)return;
@@ -50,7 +55,13 @@ $('activity-rows').addEventListener('click',async e=>{
 $('activity-kind').addEventListener('change',draw);
 $('refresh-activity').addEventListener('click',()=>load(),true);
 document.querySelector('[data-tab="activity"]').addEventListener('click',()=>{
+ if(!window.PANTRY_CAN_VIEW_ACTIVITY)return;
  if(!loadedOnce)load();else draw();
 },true);
 window.addEventListener('pantry-updated',()=>{loadedOnce=false;});
+window.addEventListener('pantry-role-ready',()=>{
+ if(window.PANTRY_CAN_VIEW_ACTIVITY&&!$('tab-activity').classList.contains('hidden')){
+  if(!loadedOnce)load();else draw();
+ }
+});
 })();

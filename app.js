@@ -48,6 +48,9 @@
   }
   function setConnection(message) { el('connection').textContent = message; }
   function setTab(name) {
+    if (name === 'activity' && !window.PANTRY_CAN_VIEW_ACTIVITY) return;
+    if (name === 'finances' && !window.PANTRY_CAN_VIEW_FINANCES) return;
+    if (name === 'admin' && !window.PANTRY_IS_ADMIN) return;
     state.tab = name;
     document.querySelectorAll('[data-tab]').forEach(button =>
       button.classList.toggle('active', button.dataset.tab === name));
